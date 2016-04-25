@@ -17,13 +17,13 @@ public class Bullet {
     int heading = -1;
     float speed = 350;
 
-    private int width = 1;
+    private int width = 2;
     private int height;
 
     private boolean isActive;
 
     public Bullet(int screenY){
-        height = screenY/20;
+        height = screenY/30;
         isActive = false;
         rect = new RectF();
     }

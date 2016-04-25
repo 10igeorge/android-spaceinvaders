@@ -25,8 +25,8 @@ public class PlayerShip {
 
     public PlayerShip(Context context, int screenX, int screenY) {
         rect = new RectF();
-        length = screenX/10;
-        height = screenY/10;
+        length = screenX/15;
+        height = screenY/15;
         x = screenX/2;
         y = screenY-20;
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.playership);
