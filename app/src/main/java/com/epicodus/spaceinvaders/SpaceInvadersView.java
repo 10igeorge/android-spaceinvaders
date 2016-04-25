@@ -99,7 +99,31 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
     }
 
     private void prepareLevel(){
-       //TODO: Come back to this
+       playerShip = new PlayerShip((Context) context, screenX, screenY);
+        bullet = new Bullet(screenY);
+
+        for(int i= 0; i < invadersBullets.length; i++){
+            invadersBullets[i] = new Bullet(screenY);
+        }
+
+        numberInvaders = 0;
+        for(int column = 0; column < 6; column++){
+            for(int row=0; row<5; row++){
+                invaders[numberInvaders] = new Invader((Context) context, row, column, screenX, screenY);
+                numberInvaders ++;
+            }
+        }
+
+        numBricks = 0;
+        for(int shelterNumber = 0; shelterNumber < 4; shelterNumber++) {
+            for(int column = 0; column < 10; column++) {
+                for(int row = 0; row < 5; row++) {
+                    bricks[numBricks] = new DefenceBrick(row, column, shelterNumber, screenX, screenY);
+                    numBricks++;
+                }
+            }
+        }
+
     }
 
     @Override
@@ -130,10 +154,41 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
         boolean lost = false;
 
         // Move the player's ship
+        playerShip.update(fps);
 
         // Update the invaders if visible
+        for(int i = 0; i<numberInvaders; i++){
+            if(invaders[i].getVisibility()){
+                invaders[i].update(fps);
+                if(invaders[i].takeAim(playerShip.getX(), playerShip.getLength())){
+                    if(invadersBullets[nextBullet].shoot(invaders[i].getX() + invaders[i].getLength()/2, invaders[i].getY(), bullet.DOWN)){
+                        nextBullet++;
+                        if(nextBullet == maxInvaderBullets){
+                            nextBullet = 0;
+                            Log.d("hey", "made it");
+                        }
+                    }
+                } if(invaders[i].getX() > screenX - invaders[i].getLength() || invaders[i].getX() < 0){
+                    bumped = true;
+                }
+            }
+        }
+
+        if(bumped){
+            for(int i = 0; i < numberInvaders; i ++){
+                invaders[i].dropDownAndReverse();
+                if(invaders[i].getY() > screenY - screenY/10){
+                    lost = true;
+                }
+            }
+        }
 
         // Update all the invaders bullets if active
+        for(int i = 0; i < invadersBullets.length; i++){
+            if(invadersBullets[i].getStatus()){
+                invadersBullets[i].update(fps);
+            }
+        }
 
         // Did an invader bump into the edge of the screen
 
@@ -142,7 +197,9 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
         }
 
         // Update the players bullet
-
+        if(bullet.getStatus()){
+            bullet.update(fps);
+        }
         // Has the player's bullet hit the top of the screen
 
         // Has an invaders bullet hit the bottom of the screen
@@ -163,14 +220,37 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
             canvas.drawColor(Color.argb(255, 26, 128, 182));
             paint.setColor(Color.argb(255,  255, 255, 255));
             // Draw the player spaceship
+            canvas.drawBitmap(playerShip.getBitmap(), playerShip.getX(), screenY - playerShip.getHeight() - 10, paint);
 
             // Draw the invaders
+            for( int i=0; i < numberInvaders; i++){
+                if(invaders[i].getVisibility()){
+                    if(uhOrOh) {
+                        canvas.drawBitmap(invaders[i].getBitmap(), invaders[i].getX(), invaders[i].getY(), paint);
+                    } else {
+                        canvas.drawBitmap(invaders[i].getBitmap2(), invaders[i].getX(), invaders[i].getY(), paint);
+                    }
+                }
+            }
 
             // Draw the bricks if visible
+            for(int i = 0; i < numBricks; i++) {
+                if(bricks[i].getVisibility()) {
+                    canvas.drawRect(bricks[i].getRect(), paint);
+                }
+            }
 
             // Draw the players bullet if active
+            if(bullet.getStatus()){
+                canvas.drawRect(bullet.getRect(), paint);
+            }
 
             // Draw the invaders bullets if active
+            for(int i=0; i < invadersBullets.length; i++){
+                if(invadersBullets[i].getStatus()){
+                    canvas.drawRect(invadersBullets[i].getRect(), paint);
+                }
+            }
 
             // Draw the score and remaining lives
             // Change the brush color
@@ -199,12 +279,29 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent){
+        Log.v("motion", ""+motionEvent);
         switch(motionEvent.getAction() & MotionEvent.ACTION_MASK){
             case MotionEvent.ACTION_DOWN:
+                paused = false;
 
+                if(motionEvent.getY() > screenY - screenY/8) {
+                    if(motionEvent.getX() > screenX/2) {
+                        playerShip.setMovementState(playerShip.RIGHT);
+                    } else {
+                        playerShip.setMovementState(playerShip.LEFT);
+                    }
+                }
+
+                if(motionEvent.getY() < screenY - screenY/8) {
+                    if (bullet.shoot(playerShip.getX() + playerShip.getLength() / 2, screenY, bullet.UP)) {
+                        soundPool.play(shootID, 1, 1, 0, 0, 1);
+                    }
+                }
                 break;
             case MotionEvent.ACTION_UP:
-
+                if(motionEvent.getY() > screenY - screenY / 10) {
+                    playerShip.setMovementState(playerShip.STOPPED);
+                }
                 break;
         }
         return true;
