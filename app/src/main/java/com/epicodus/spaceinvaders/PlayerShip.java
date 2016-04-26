@@ -83,10 +83,7 @@ public class PlayerShip {
             if(this.getX() > 0) {
                 x = x - shipSpeed / fps;
             }
-
         }
-
-
 
         if (shipMoving == RIGHT) {
             if(this.getX()+this.getLength() < this.displayX) {

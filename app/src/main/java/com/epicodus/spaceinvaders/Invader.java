@@ -34,8 +34,8 @@ public class Invader {
     public Invader(Context context, int row, int column, int screenX, int screenY){
         rect = new RectF();
 
-        length = screenX/20;
-        height = screenY/20;
+        length = screenX/25;
+        height = screenY/25;
 
         isVisible = true;
 
@@ -50,7 +50,7 @@ public class Invader {
         bitmap1 = Bitmap.createScaledBitmap(bitmap1, (int) length, (int) height, false);
         bitmap2 = Bitmap.createScaledBitmap(bitmap2, (int) length, (int) height, false);
 
-        shipSpeed = 40;
+        shipSpeed = 60;
     }
 
     public void setInvisible(){

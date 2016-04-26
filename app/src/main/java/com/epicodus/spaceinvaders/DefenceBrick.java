@@ -8,6 +8,7 @@ import android.graphics.RectF;
 public class DefenceBrick {
     private RectF rect;
     private boolean isVisible;
+    int brickHeight;
 
     public DefenceBrick(int row, int column, int shelterNumber, int screenX, int screenY) {
         int width = screenX/90;
@@ -18,7 +19,7 @@ public class DefenceBrick {
         int brickPadding = 1;
         int shelterPadding = screenX/9;
         int startHeight = screenY - (screenY/8 * 2);
-
+        brickHeight = (row*height)+brickPadding+startHeight;
         rect = new RectF(column * width + brickPadding + (shelterPadding * shelterNumber) + shelterPadding + shelterPadding*shelterNumber,
                 row*height+brickPadding + startHeight,
                 column*width + width - brickPadding + (shelterPadding*shelterNumber) + shelterPadding + shelterPadding*shelterNumber,

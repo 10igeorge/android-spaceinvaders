@@ -57,7 +57,7 @@ public class Bullet {
                 isActive = true;
                 return true;
             }
-        }else {
+        } else {
             x = startX;
             y = startY;
             heading = direction;
