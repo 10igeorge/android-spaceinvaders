@@ -33,8 +33,9 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
     private long timeThisFrame;
     private int screenX;
     private int screenY;
+    private UFO ufo;
     private PlayerShip playerShip;
-    private Bullet[] playerBullets = new Bullet[5];
+    private Bullet[] playerBullets = new Bullet[3];
     private Bullet[] invadersBullets = new Bullet[200];
     private int nextBullet;
     private int maxInvaderBullets = 10;
@@ -64,6 +65,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
     private boolean bumpedRecently = false;
     private long bumpedTimer;
     private long bumpedInterval = 100;
+    private int remainingInvaders;
 
     public SpaceInvadersView(Context context, int x, int y){
         super(context);
@@ -112,8 +114,10 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
     }
 
     private void prepareLevel(){
+        ufo = new UFO((Context) context, screenX, screenY);
         lives = 3;
         score = 0;
+        ufo = new UFO((Context) context, screenX, screenY);
         playerShip = new PlayerShip((Context) context, screenX, screenY);
         for(int i = 0; i < playerBullets.length; i++) {
             playerBullets[i] = new Bullet(screenY);
@@ -131,6 +135,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                 numberInvaders ++;
             }
         }
+        remainingInvaders = numberInvaders;
 
         numBricks = 0;
         for(int shelterNumber = 0; shelterNumber < 4; shelterNumber++) {
@@ -214,6 +219,14 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
         // Move the player's ship
         playerShip.update(fps);
 
+        if(ufo.activate()) {
+            ufo.setActive();
+        }
+        if(ufo.getStatus()) {
+            ufo.update(fps);
+        }
+
+
         // Update the invaders if visible
         for (int i = 0; i < numberInvaders; i++) {
             if (invaders[i].getVisibility()) {
@@ -245,7 +258,6 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
         }
 
         if (bumped) {
-            Log.d("its broken", invaders[0].getY()+"");
             for (int i = 0; i < numberInvaders; i++) {
                 invaders[i].dropDownAndReverse();
                 if (invaders[i].getY() > screenY - screenY / 15) {
@@ -289,6 +301,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                         }
                     }
                 }
+
                 for (int j = 0; j < numberInvaders; j++) {
                     if (invaders[j].getVisibility()) {
                         if (RectF.intersects(playerBullets[i].getRect(), invaders[j].getRect())) {
@@ -296,8 +309,11 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                             soundPool.play(invaderExplodeID, 1, 1, 0, 0, 1);
                             playerBullets[i].setInactive();
                             score = score + 10;
+                            remainingInvaders--;
+                            Log.d("remaining", "" + remainingInvaders);
 
-                            if (score == numberInvaders * 10) {
+                            if (remainingInvaders == 0) {
+                                Log.d("it", "works");
                                 paused = true;
                                 score = 0;
                                 lives = 3;
@@ -307,10 +323,21 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                         }
                     }
                 }
+                if(ufo.getStatus()) {
+                    if(RectF.intersects(ufo.getRect(), playerBullets[i].getRect())) {
+                        score += ufo.getPoints();
+                        ufo.deactivate();
+                        playerBullets[i].setInactive();
+                    }
+                }
+
             }
         }
 
-
+        //Has the ufo gone offscreen
+        if(ufo.getX() > screenX) {
+            ufo.deactivate();
+        }
 
 
         // Has an invaders playerBullets hit the bottom of the screen
@@ -367,6 +394,8 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                 }
             }
         }
+
+
     }
 
     private void draw(){
@@ -391,6 +420,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                 paint.setTextSize(screenX / 10);
                 canvas.drawText("You lose", screenX / 2, screenY / 2, paint);
             } else if (gameState.equals("game")) {
+                canvas.drawBitmap(ufo.getBitmap(), ufo.getX(), ufo.getY(),paint);
                 paint.setTextAlign(Paint.Align.LEFT);
                 // Draw the player spaceship
                 if (playerShip.getVisibility()) {
@@ -424,12 +454,18 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                 }
 
 
-                // Draw the invaders playerBulletss if active
+                // Draw the invaders bullets if active
 
                 for (int i = 0; i < invadersBullets.length; i++) {
                     if (invadersBullets[i].getStatus()) {
                         canvas.drawRect(invadersBullets[i].getRect(), paint);
                     }
+                }
+
+
+
+                if(ufo.getStatus()){
+                    canvas.drawBitmap(ufo.getBitmap(), ufo.getX(), ufo.getY(), paint);
                 }
 
                 // Draw the score and remaining lives

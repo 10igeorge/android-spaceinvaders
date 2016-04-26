@@ -50,7 +50,7 @@ public class Invader {
         bitmap1 = Bitmap.createScaledBitmap(bitmap1, (int) length, (int) height, false);
         bitmap2 = Bitmap.createScaledBitmap(bitmap2, (int) length, (int) height, false);
 
-        shipSpeed = 60;
+        shipSpeed = 100;
     }
 
     public void setInvisible(){
@@ -106,12 +106,12 @@ public class Invader {
         }
 
         y = y+height;
-        shipSpeed = shipSpeed * 1.18f;
+        shipSpeed = shipSpeed * 1.10f;
     }
 
     public boolean takeAim(float playerShipX, float playerShipLength){
 
-        int randomNumber = -1;
+        int randomNumber;
 
         if((playerShipX + playerShipLength > x && playerShipX + playerShipLength < x + length) || (playerShipX > x && playerShipX < x + length)){
             randomNumber = generator.nextInt(150);
