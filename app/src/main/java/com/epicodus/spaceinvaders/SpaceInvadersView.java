@@ -338,64 +338,70 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
     }
 
     private void draw(){
-        if(ourHolder.getSurface().isValid()){
+        if(ourHolder.getSurface().isValid()) {
             canvas = ourHolder.lockCanvas();
             canvas.drawColor(Color.BLACK);
-            paint.setColor(Color.argb(255,  255, 255, 255));
+            paint.setColor(Color.argb(255, 255, 255, 255));
 
 
-            if(gameState.equals("start")){
-                canvas.drawText("Space Invaders", 0, 0, paint);
-            }
+            if (gameState.equals("start")) {
+                Log.d("start", gameState);
+                paint.setTextAlign(Paint.Align.CENTER);
+                paint.setTextSize(screenX/10);
+                canvas.drawText("Space Invaders", screenX / 2, screenY / 2, paint);
+            } else if (gameState.equals("game")) {
 
-            // Draw the player spaceship
-            if(playerShip.getVisibility()) {
-                canvas.drawBitmap(playerShip.getBitmap(), playerShip.getX(), screenY - playerShip.getHeight() - 10, paint);
-            }
+                // Draw the player spaceship
+                if (playerShip.getVisibility()) {
+                    canvas.drawBitmap(playerShip.getBitmap(), playerShip.getX(), screenY - playerShip.getHeight() - 10, paint);
+                }
 
-            // Draw the invaders
-            for( int i=0; i < numberInvaders; i++){
-                if(invaders[i].getVisibility()){
-                    if(uhOrOh) {
-                        canvas.drawBitmap(invaders[i].getBitmap(), invaders[i].getX(), invaders[i].getY(), paint);
-                    } else {
-                        canvas.drawBitmap(invaders[i].getBitmap2(), invaders[i].getX(), invaders[i].getY(), paint);
+                // Draw the invaders
+                for (int i = 0; i < numberInvaders; i++) {
+                    if (invaders[i].getVisibility()) {
+                        if (uhOrOh) {
+                            canvas.drawBitmap(invaders[i].getBitmap(), invaders[i].getX(), invaders[i].getY(), paint);
+                        } else {
+                            canvas.drawBitmap(invaders[i].getBitmap2(), invaders[i].getX(), invaders[i].getY(), paint);
+                        }
                     }
                 }
-            }
 
-            // Draw the bricks if visible
-            for(int i = 0; i < numBricks; i++) {
-                if(bricks[i].getVisibility()) {
-                    canvas.drawRect(bricks[i].getRect(), paint);
+                // Draw the bricks if visible
+                for (int i = 0; i < numBricks; i++) {
+                    if (bricks[i].getVisibility()) {
+                        canvas.drawRect(bricks[i].getRect(), paint);
+                    }
                 }
-            }
 
-            // Draw the players playerBullets if active
-            paint.setColor(Color.CYAN);
-            for(int i = 0; i < playerBullets.length; i++) {
-                if(playerBullets[i].getStatus()){
-                    canvas.drawRect(playerBullets[i].getRect(), paint);
+                // Draw the players playerBullets if active
+                paint.setColor(Color.CYAN);
+                for (int i = 0; i < playerBullets.length; i++) {
+                    if (playerBullets[i].getStatus()) {
+                        canvas.drawRect(playerBullets[i].getRect(), paint);
+                    }
                 }
-            }
 
 
-            // Draw the invaders playerBulletss if active
+                // Draw the invaders playerBulletss if active
 
-            for(int i=0; i < invadersBullets.length; i++){
-                if(invadersBullets[i].getStatus()){
-                    canvas.drawRect(invadersBullets[i].getRect(), paint);
+                for (int i = 0; i < invadersBullets.length; i++) {
+                    if (invadersBullets[i].getStatus()) {
+                        canvas.drawRect(invadersBullets[i].getRect(), paint);
+                    }
                 }
+
+                // Draw the score and remaining lives
+                // Change the brush color
+                paint.setColor(Color.argb(255, 249, 129, 0));
+                paint.setTextSize(40);
+                canvas.drawText("Score: " + score + "   Lives: " + lives, 10, 50, paint);
+
+
             }
-
-            // Draw the score and remaining lives
-            // Change the brush color
-            paint.setColor(Color.argb(255,  249, 129, 0));
-            paint.setTextSize(40);
-            canvas.drawText("Score: " + score + "   Lives: " + lives, 10,50, paint);
-
             ourHolder.unlockCanvasAndPost(canvas);
         }
+
     }
 
     public void pause(){
@@ -415,30 +421,35 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent){
-        Log.v("motion", ""+motionEvent);
         switch(motionEvent.getAction() & MotionEvent.ACTION_MASK){
             case MotionEvent.ACTION_DOWN:
-                paused = false;
+                if(gameState.equals("start")){
+                    gameState = "game";
+                    break;
+                } else if (gameState.equals("game")){
+                    paused = false;
 
-                if(motionEvent.getY() > screenY - screenY/8) {
-                    if(motionEvent.getX() > screenX/2) {
-                        playerShip.setMovementState(playerShip.RIGHT);
-                    } else {
-                        playerShip.setMovementState(playerShip.LEFT);
+                    if(motionEvent.getY() > screenY - screenY/8) {
+                        if(motionEvent.getX() > screenX/2) {
+                            playerShip.setMovementState(playerShip.RIGHT);
+                        } else {
+                            playerShip.setMovementState(playerShip.LEFT);
+                        }
                     }
-                }
 
-                if(motionEvent.getY() < screenY - screenY/8) {
-                    for(int i = 0; i < playerBullets.length; i++) {
-                        if(!playerBullets[i].getStatus()) {
-                            if (playerBullets[i].shoot(playerShip.getX() + playerShip.getLength() / 2, screenY, playerBullets[i].UP)) {
-                                soundPool.play(shootID, 1, 1, 0, 0, 1);
-                                break;
+                    if(motionEvent.getY() < screenY - screenY/8) {
+                        for(int i = 0; i < playerBullets.length; i++) {
+                            if(!playerBullets[i].getStatus()) {
+                                if (playerBullets[i].shoot(playerShip.getX() + playerShip.getLength() / 2, screenY, playerBullets[i].UP)) {
+                                    soundPool.play(shootID, 1, 1, 0, 0, 1);
+                                    break;
+                                }
                             }
                         }
                     }
+                    break;
                 }
-                break;
+
             case MotionEvent.ACTION_UP:
                 playerShip.setMovementState(playerShip.STOPPED);
                 break;
