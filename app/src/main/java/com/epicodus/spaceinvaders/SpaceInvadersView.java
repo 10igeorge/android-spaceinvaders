@@ -225,6 +225,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                 invaders[i].dropDownAndReverse();
                 if (invaders[i].getY() > screenY - screenY / 10) {
                     lost = true;
+                    gameState = "lost";
                 }
             }
         }
@@ -327,6 +328,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
 
                         if (lives == 0) {
                             paused = true;
+                            gameState = "lost";
                             lives = 3;
                             score = 0;
                             prepareLevel();
@@ -347,8 +349,18 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
             if (gameState.equals("start")) {
                 Log.d("start", gameState);
                 paint.setTextAlign(Paint.Align.CENTER);
-                paint.setTextSize(screenX/10);
+                paint.setTextSize(screenX / 10);
                 canvas.drawText("Space Invaders", screenX / 2, screenY / 2, paint);
+                paint.setTextSize(screenX / 30);
+                canvas.drawText("Touch screen to start", screenX / 2, screenY / 2 + 100, paint);
+            } else if (gameState.equals("won")) {
+                paint.setTextAlign(Paint.Align.CENTER);
+                paint.setTextSize(screenX / 10);
+                canvas.drawText("You won!", screenX / 2, screenY / 2, paint);
+            } else if (gameState.equals("lost")) {
+                paint.setTextAlign(Paint.Align.CENTER);
+                paint.setTextSize(screenX / 10);
+                canvas.drawText("You lose", screenX / 2, screenY / 2, paint);
             } else if (gameState.equals("game")) {
 
                 // Draw the player spaceship
