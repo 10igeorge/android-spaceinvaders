@@ -22,6 +22,8 @@ public class PlayerShip {
     public final int LEFT = 1;
     public final int RIGHT = 2;
     private int shipMoving = STOPPED;
+    private boolean hit = false;
+    private boolean isVisible = true;
 
     public PlayerShip(Context context, int screenX, int screenY) {
         displayX = screenX;
@@ -53,6 +55,22 @@ public class PlayerShip {
 
     public float getHeight() {
         return height;
+    }
+
+    public boolean getHit() {
+        return hit;
+    }
+
+    public boolean getVisibility() {
+        return isVisible;
+    }
+
+    public void setHit(boolean hit) {
+        this.hit = hit;
+    }
+
+    public void setVisibility(boolean visible) {
+        isVisible = visible;
     }
 
     public void setMovementState(int state) {

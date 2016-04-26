@@ -25,6 +25,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
     private SurfaceHolder ourHolder;
     private volatile boolean playing;
     private boolean paused = true;
+    private String gameState = "start";
     private Canvas canvas;
     private Paint paint;
     private long fps;
@@ -52,6 +53,10 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
     private long menaceInterval = 1000;
     private boolean uhOrOh;
     private long lastMenaceTime = System.currentTimeMillis();
+    private long hitInterval = 1500;
+    private long lastHit;
+    private long blinkInterval = 250;
+    private long lastBlinkTime;
 
     public SpaceInvadersView(Context context, int x, int y){
         super(context);
@@ -164,10 +169,26 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
                     // Alter value of uhOrOh
                     uhOrOh = !uhOrOh;
                 }
+                if((startFrameTime - lastHit)>hitInterval) {
+                    playerShip.setHit(false);
+                    playerShip.setVisibility(true);
+                } else {
+
+                    if((startFrameTime - lastBlinkTime) > blinkInterval) {
+                        if(playerShip.getVisibility()) {
+                            playerShip.setVisibility(false);
+
+                        } else {
+                            playerShip.setVisibility(true);
+                        }
+                        lastBlinkTime = System.currentTimeMillis();
+                    }
+                }
+
+
             }
 
         }
-            //TODO: do something new
     }
 
     private void update() {
@@ -291,19 +312,25 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
         // Has a player playerBullets hit a shelter brick
 
 
-        // Has an invader playerBullets hit the player ship
+        // Has an invader bullet hit the player ship
         for (int i = 0; i < invadersBullets.length; i++) {
             if (invadersBullets[i].getStatus()) {
                 if (RectF.intersects(playerShip.getRect(), invadersBullets[i].getRect())) {
-                    invadersBullets[i].setInactive();
-                    lives--;
-                    soundPool.play(playerExplodeID, 1, 1, 0, 0, 1);
+                    if(!playerShip.getHit()) {
+                        invadersBullets[i].setInactive();
+                        lives--;
+                        soundPool.play(playerExplodeID, 1, 1, 0, 0, 1);
+                        playerShip.setHit(true);
+                        lastHit = System.currentTimeMillis();
+                        lastBlinkTime = System.currentTimeMillis();
+                        playerShip.setVisibility(false);
 
-                    if (lives == 0) {
-                        paused = true;
-                        lives = 3;
-                        score = 0;
-                        prepareLevel();
+                        if (lives == 0) {
+                            paused = true;
+                            lives = 3;
+                            score = 0;
+                            prepareLevel();
+                        }
                     }
                 }
             }
@@ -315,8 +342,16 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
             canvas = ourHolder.lockCanvas();
             canvas.drawColor(Color.BLACK);
             paint.setColor(Color.argb(255,  255, 255, 255));
+
+
+            if(gameState.equals("start")){
+                canvas.drawText("Space Invaders", 0, 0, paint);
+            }
+
             // Draw the player spaceship
-            canvas.drawBitmap(playerShip.getBitmap(), playerShip.getX(), screenY - playerShip.getHeight() - 10, paint);
+            if(playerShip.getVisibility()) {
+                canvas.drawBitmap(playerShip.getBitmap(), playerShip.getX(), screenY - playerShip.getHeight() - 10, paint);
+            }
 
             // Draw the invaders
             for( int i=0; i < numberInvaders; i++){
@@ -411,3 +446,11 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
         return true;
     }
 }
+
+
+
+//TODO: win/lose screen
+//TODO: different invaders
+//TODO: UFO extra points
+//TODO: invader/shield collision
+//TODO: ^change "landed"
