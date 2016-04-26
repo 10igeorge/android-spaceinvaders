@@ -49,7 +49,15 @@ public class Bullet {
     }
 
     public boolean shoot(float startX, float startY, int direction){
-        if(!isActive){
+        if(heading == DOWN) {
+            if(!isActive){
+                x = startX;
+                y = startY;
+                heading = direction;
+                isActive = true;
+                return true;
+            }
+        }else {
             x = startX;
             y = startY;
             heading = direction;

@@ -11,7 +11,7 @@ import android.graphics.RectF;
 public class PlayerShip {
 
     RectF rect;
-
+    private int displayX;
     private Bitmap bitmap;
     private float length;
     private float height;
@@ -24,6 +24,7 @@ public class PlayerShip {
     private int shipMoving = STOPPED;
 
     public PlayerShip(Context context, int screenX, int screenY) {
+        displayX = screenX;
         rect = new RectF();
         length = screenX/15;
         height = screenY/15;
@@ -59,12 +60,20 @@ public class PlayerShip {
     }
 
     public void update(long fps) {
+
         if(shipMoving == LEFT) {
-            x = x - shipSpeed / fps;
+            if(this.getX() > 0) {
+                x = x - shipSpeed / fps;
+            }
+
         }
 
-        if(shipMoving == RIGHT) {
-            x = x + shipSpeed / fps;
+
+
+        if (shipMoving == RIGHT) {
+            if(this.getX()+this.getLength() < this.displayX) {
+                x = x + shipSpeed / fps;
+            }
         }
 
         rect.top = y;
